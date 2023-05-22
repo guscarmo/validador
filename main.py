@@ -6,6 +6,8 @@ import pyperclip
 import pandas as pd
 import os
 
+publisher = 'GooExample'
+
 pd.set_option('display.max_columns', None)  # Exibir todas as colunas
 pd.set_option('display.expand_frame_repr', False)  # Não
 
@@ -65,7 +67,7 @@ df_merge = pd.merge(df_sheet, df_bq, on='DATE', suffixes=('_sheet', '_bq'))
 
 #print(df_bq)
 
-print(df_merge)
+#print(df_merge)
 
 
 def difference(row):
@@ -88,4 +90,12 @@ def difference(row):
 resulted = df_merge.apply(difference, axis=1)
 
 df_resulted = pd.DataFrame([item for sublist in resulted for item in sublist])
-print(df_resulted)
+df_resulted.name = f'Diferenças para o veículo {publisher}'
+
+dates = df_resulted['DATE'].unique()
+dates_line = ' '.join(dates)
+
+
+print(f"{df_resulted.name}\n\
+{df_resulted}\n\
+Datas distintas:{dates_line}")

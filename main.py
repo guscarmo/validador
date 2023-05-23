@@ -17,7 +17,11 @@ chrome_options.add_argument("--profile-directory=Default")
 
 driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
 
-linkLastRow = 'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0&range=H1'
+linkSheet = 'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0'
+lastRowCell = 'H1'
+rowDays = 7
+
+linkLastRow = f'{linkSheet}&range={lastRowCell}'
 
 driver.get(linkLastRow)
 
@@ -26,13 +30,10 @@ sleep(5)
 a = ActionChains(driver)
 a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
 
-# gridSheet = driver.find_element_by_xpath('//div[@class="grid-table-container"]')
-# gridSheet.send_keys('')
 
 numberLastRow = pyperclip.paste()
-numberFirstRowIndex = int(numberLastRow) - 7
-linkInterval = f'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0&range=\
-A{numberFirstRowIndex}:D{numberLastRow}'
+numberFirstRowIndex = int(numberLastRow) - rowDays
+linkInterval = f'{linkSheet}&range=A{numberFirstRowIndex}:D{numberLastRow}'
 
 driver.get(linkInterval)
 a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
@@ -42,7 +43,6 @@ column_names = ['DATE', 'INVESTIMENTO', 'IMPRESSOES', 'CLIQUES']
 df_sheet.columns = column_names
 
 df_sheet['DATE'] = pd.to_datetime(df_sheet['DATE'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d')
-
 
 df_sheet = df_sheet.replace(',', '.', regex=True)
 

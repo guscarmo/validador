@@ -20,6 +20,9 @@ driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', 
 linkSheet = 'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0'
 lastRowCell = 'H1'
 rowDays = 7
+Metric1 = 'INVESTIMENTO'
+Metric2 = 'IMPRESSOES'
+Metric3 = 'CLIQUES'
 
 linkLastRow = f'{linkSheet}&range={lastRowCell}'
 
@@ -39,29 +42,29 @@ driver.get(linkInterval)
 a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
 
 df_sheet = pd.read_clipboard()
-column_names = ['DATE', 'INVESTIMENTO', 'IMPRESSOES', 'CLIQUES']
+column_names = ['DATE', Metric1, Metric2, Metric3]
 df_sheet.columns = column_names
 
 df_sheet['DATE'] = pd.to_datetime(df_sheet['DATE'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d')
 
 df_sheet = df_sheet.replace(',', '.', regex=True)
 
-df_sheet['INVESTIMENTO'] = df_sheet['INVESTIMENTO'].astype(float)
-df_sheet['IMPRESSOES'] = df_sheet['IMPRESSOES'].astype(float)
-df_sheet['CLIQUES'] = df_sheet['CLIQUES'].astype(float)
+df_sheet[Metric1] = df_sheet[Metric1].astype(float)
+df_sheet[Metric2] = df_sheet[Metric2].astype(float)
+df_sheet[Metric3] = df_sheet[Metric3].astype(float)
 
 
 df_bq = pd.read_excel('bq.xlsx', sheet_name='Planilha1', header=1, engine='openpyxl')
-column_names = ['DATE', 'INVESTIMENTO', 'IMPRESSOES', 'CLIQUES']
+column_names = ['DATE', Metric1, Metric2, Metric3]
 df_bq.columns = column_names
 
 df_bq['DATE'] = pd.to_datetime(df_bq['DATE'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d')
 
 df_bq = df_bq.replace(',', '.', regex=True)
 
-df_bq['INVESTIMENTO'] = df_bq['INVESTIMENTO'].astype(float)
-df_bq['IMPRESSOES'] = df_bq['IMPRESSOES'].astype(float)
-df_bq['CLIQUES'] = df_bq['CLIQUES'].astype(float)
+df_bq[Metric1] = df_bq[Metric1].astype(float)
+df_bq[Metric2] = df_bq[Metric2].astype(float)
+df_bq[Metric3] = df_bq[Metric3].astype(float)
 
 df_merge = pd.merge(df_sheet, df_bq, on='DATE', suffixes=('_sheet', '_bq'))
 
@@ -72,7 +75,7 @@ df_merge = pd.merge(df_sheet, df_bq, on='DATE', suffixes=('_sheet', '_bq'))
 
 def difference(row):
     diffs = []
-    for column in ['INVESTIMENTO', 'IMPRESSOES', 'CLIQUES']:
+    for column in [Metric1, Metric2, Metric3]:
         col1 = f'{column}_sheet'
         col2 = f'{column}_bq'
         try:
@@ -80,7 +83,7 @@ def difference(row):
             if abs(diff_pct) > 5:
                 diffs.append({
                     'DATE': row['DATE'],
-                    'Coluna': column,
+                    'Dimensão': column,
                     'Diferença (%)': diff_pct
                 })
         except KeyError:

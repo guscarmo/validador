@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from time import sleep
 import pyperclip
 import pandas as pd
+from dotenv import load_dotenv
 import os
 
 publisher = 'GooExample'
@@ -20,15 +21,20 @@ driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', 
 linkSheet = 'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0'
 lastRowCell = 'H1'
 rowDays = 7
-Metric1 = 'INVESTIMENTO'
-Metric2 = 'IMPRESSOES'
-Metric3 = 'CLIQUES'
+
+load_dotenv()
+Metric1 = os.getenv('Metric1')
+Metric2 = os.getenv('Metric2')
+Metric3 = os.getenv('Metric3')
+
+print(Metric1)
+print(Metric2)
 
 linkLastRow = f'{linkSheet}&range={lastRowCell}'
 
 driver.get(linkLastRow)
 
-sleep(5)
+sleep(2)
 
 a = ActionChains(driver)
 a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
@@ -101,4 +107,4 @@ dates_line = ' '.join(dates)
 
 print(f"{df_resulted.name}\n\
 {df_resulted}\n\
-Datas distintas:{dates_line}")
+Datas distintas: {dates_line}")

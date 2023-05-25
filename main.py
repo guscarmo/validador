@@ -44,33 +44,36 @@ for env_file in env_files:
     #Arquivo .env
     print(f"Arquivo .env: {env_file}")
 
+    #Forma o link da celula que contem o valor da ultima linha preenchida
     rowDays = int(rowDays)
-
     linkLastRow = f'{linkSheet}&range={lastRowCell}'
 
-    print(linkLastRow)
-
+    #Acessa o link
     driver.get(linkLastRow)
-
     sleep(2)
 
+    #Copia para area de tranferencia e forma o link das ultimas 7 linhas
     a = ActionChains(driver)
     a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
-
-
     numberLastRow = pyperclip.paste()
     numberFirstRowIndex = int(numberLastRow) - rowDays
     linkInterval = f'{linkSheet}&range=A{numberFirstRowIndex}:D{numberLastRow}'
 
+    #Acessa o intervalo das ultimas 7 linhas e copia
     driver.get(linkInterval)
     a.key_down(Keys.CONTROL).send_keys('C').key_up(Keys.CONTROL).perform()
 
+    #Inicia o df através da area de tranferencia
     df_sheet = pd.read_clipboard()
+
+    #Define o nome das colunas
     column_names = ['DATE', Metric1, Metric2, Metric3]
     df_sheet.columns = column_names
 
+    #Formata a data
     df_sheet['DATE'] = pd.to_datetime(df_sheet['DATE'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d')
 
+    #Substitui e formata valores
     df_sheet = df_sheet.replace(',', '.', regex=True)
 
     df_sheet[Metric1] = df_sheet[Metric1].astype(float)
@@ -78,6 +81,7 @@ for env_file in env_files:
     df_sheet[Metric3] = df_sheet[Metric3].astype(float)
 
 
+    #Inicia o segundo df que vai ser comparado
     df_bq = pd.read_excel('bq.xlsx', sheet_name='Planilha1', header=1, engine='openpyxl')
     column_names = ['DATE', Metric1, Metric2, Metric3]
     df_bq.columns = column_names
@@ -90,13 +94,10 @@ for env_file in env_files:
     df_bq[Metric2] = df_bq[Metric2].astype(float)
     df_bq[Metric3] = df_bq[Metric3].astype(float)
 
+    #Mescla os 2 df
     df_merge = pd.merge(df_sheet, df_bq, on='DATE', suffixes=('_sheet', '_bq'))
 
-    #print(df_bq)
-
-    #print(df_merge)
-
-
+    #Calcula a diferença entre os dois df
     def difference(row):
         diffs = []
         for column in [Metric1, Metric2, Metric3]:

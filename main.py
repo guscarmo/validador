@@ -6,8 +6,9 @@ import pyperclip
 import pandas as pd
 from dotenv import load_dotenv
 import os
+import json
+import subprocess
 
-publisher = 'GooExample'
 
 pd.set_option('display.max_columns', None)  # Exibir todas as colunas
 pd.set_option('display.expand_frame_repr', False)  # Não
@@ -18,19 +19,21 @@ chrome_options.add_argument("--profile-directory=Default")
 
 driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
 
-linkSheet = 'https://docs.google.com/spreadsheets/d/1m8AEqwd0_E9JxAjoR1xG9KEsHB7m5CJ5HKIiEMTiUHg/edit#gid=0'
-lastRowCell = 'H1'
-rowDays = 7
 
 load_dotenv()
+publisher = os.getenv('publisher')
+linkSheet = os.getenv('linkSheet')
+lastRowCell = os.getenv('lastRowCell')
+rowDays = os.getenv('rowDays')
 Metric1 = os.getenv('Metric1')
 Metric2 = os.getenv('Metric2')
 Metric3 = os.getenv('Metric3')
 
-print(Metric1)
-print(Metric2)
+rowDays = int(rowDays)
 
 linkLastRow = f'{linkSheet}&range={lastRowCell}'
+
+print(linkLastRow)
 
 driver.get(linkLastRow)
 
@@ -108,3 +111,16 @@ dates_line = ' '.join(dates)
 print(f"{df_resulted.name}\n\
 {df_resulted}\n\
 Datas distintas: {dates_line}")
+
+df_resulted_dict = df_resulted.to_dict(orient='records')
+
+output_data = {
+    'name': df_resulted.name,
+    'result': df_resulted_dict,
+    'dates': dates_line
+}
+
+with open('resultados.json', 'w') as json_file:
+    json.dump(output_data, json_file, indent=4)
+
+subprocess.run(['python', 'botDiscord.py'])

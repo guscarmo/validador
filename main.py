@@ -60,7 +60,7 @@ def calculate_differences(row, metric_columns, percentagediff):
                 diffs.append({
                     'DATE': row['DATE'],
                     'Dimensão': column,
-                    'Diferença (%)': diff_pct
+                    'Diferença (%)': round(diff_pct, 2)
                 })
         except KeyError:
             continue

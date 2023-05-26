@@ -12,7 +12,6 @@ import sys
 
 
 def load_environment_variables(env_file):
-    #env = {}
     load_dotenv(env_file, override=True)
     env = dict(os.environ)
     return env
@@ -84,12 +83,7 @@ def generate_output_data(df_resulted, publisher):
             'dates': dates_line
         }
     return output_data
-#
-# print(f"{df_resulted.name}\n\
-# {df_resulted}\n\
-# Datas distintas: {dates_line}")
 
-#df_resulted_dict = df_resulted.to_dict(orient='records')
 
 def save_output_data(output_data, output_file):
     with open('resultados.json', 'w') as json_file:
@@ -97,61 +91,67 @@ def save_output_data(output_data, output_file):
 
 
 def main(env_file=None):
-    env_files = ["a.env", "b.env"]
+    main_dir = os.path.dirname(os.path.abspath(__file__))  # Diretório do script main.py
+    env_files = [os.path.join(main_dir, "a.env"), os.path.join(main_dir, "b.env")]
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--user-data-dir=C:/Users/Gustavo/AppData/Local/Google/Chrome/User Data")
     chrome_options.add_argument("--profile-directory=Default")
 
     if env_file:
-        env_files = [env_file]
+        env_files = [os.path.join(main_dir, env_file)]
+
 
     for env_file in env_files:
-        env = load_environment_variables(env_file)
+        try:
+            env = load_environment_variables(env_file)
 
-        pd.set_option('display.max_columns', None)  # Exibir todas as colunas
-        pd.set_option('display.expand_frame_repr', False)  # Não
+            pd.set_option('display.max_columns', None)  # Exibir todas as colunas
+            pd.set_option('display.expand_frame_repr', False)  # Não
 
-        publisher = env.get('PUBLISHER')
-        linkSheet = env.get('LINKSHEET')
-        lastRowCell = env.get('LASTROWCELL')
-        rowDays = int(env.get('ROWDAYS'))
-        metric_columns = [env.get('METRIC1'), env.get('METRIC2'), env.get('METRIC3')]
-        percentagediff = int(env.get('PERCENTAGEDIFF'))
-
-
-        driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
-
-        linkLastRow = f'{linkSheet}&range={lastRowCell}'
-        access_last_row_link(driver, linkLastRow)
-
-        numberLastRow = pyperclip.paste()
-
-        numberFirstRowIndex = int(numberLastRow) - rowDays
-        linkInterval = f'{linkSheet}&range=A{numberFirstRowIndex}:D{numberLastRow}'
-        access_interval_link(driver, linkInterval)
-
-        df_sheet = get_dataframe_from_clipboard()
-        df_sheet = format_dataframe(df_sheet, metric_columns)
+            publisher = env.get('PUBLISHER')
+            linkSheet = env.get('LINKSHEET')
+            lastRowCell = env.get('LASTROWCELL')
+            rowDays = int(env.get('ROWDAYS'))
+            metric_columns = [env.get('METRIC1'), env.get('METRIC2'), env.get('METRIC3')]
+            percentagediff = int(env.get('PERCENTAGEDIFF'))
 
 
-        df_bq = pd.read_excel('bq.xlsx', sheet_name='Planilha1', header=1, engine='openpyxl')
-        df_bq = format_dataframe(df_bq, metric_columns)
+            driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
+
+            linkLastRow = f'{linkSheet}&range={lastRowCell}'
+            access_last_row_link(driver, linkLastRow)
+
+            numberLastRow = pyperclip.paste()
+
+            numberFirstRowIndex = int(numberLastRow) - rowDays
+            linkInterval = f'{linkSheet}&range=A{numberFirstRowIndex}:D{numberLastRow}'
+            access_interval_link(driver, linkInterval)
+
+            df_sheet = get_dataframe_from_clipboard()
+            df_sheet = format_dataframe(df_sheet, metric_columns)
+
+            bq = os.path.join(main_dir, "bq.xlsx")
+            df_bq = pd.read_excel(bq, sheet_name='Planilha1', header=1, engine='openpyxl')
+            df_bq = format_dataframe(df_bq, metric_columns)
 
 
-        df_merge = merge_dataframes(df_sheet, df_bq, metric_columns)
-        print(df_merge)
+            df_merge = merge_dataframes(df_sheet, df_bq, metric_columns)
+            print(df_merge)
 
-        resulted = df_merge.apply(calculate_differences, axis=1, args=(metric_columns, percentagediff,))
-        df_resulted = pd.DataFrame([item for sublist in resulted for item in sublist])
+            resulted = df_merge.apply(calculate_differences, axis=1, args=(metric_columns, percentagediff,))
+            df_resulted = pd.DataFrame([item for sublist in resulted for item in sublist])
 
 
-        output_data = generate_output_data(df_resulted, publisher)
-        save_output_data(output_data, 'resultados.json')
+            output_data = generate_output_data(df_resulted, publisher)
+            save_output_data(output_data, 'resultados.json')
 
-        subprocess.run(['python', 'botDiscord.py'])
+            botDiscord = os.path.join(main_dir, "botDiscord.py")
+            subprocess.run(['python', botDiscord])
 
-        driver.quit()
+            driver.quit()
+        except Exception as e:
+            print(f"Erro ao processar o arquivo {env_file}: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

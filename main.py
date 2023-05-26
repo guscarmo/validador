@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import json
 import subprocess
+import sys
 
 
 def load_environment_variables(env_file):
@@ -95,12 +96,15 @@ def save_output_data(output_data, output_file):
         json.dump(output_data, json_file, indent=4)
 
 
-def main():
+def main(env_file=None):
     env_files = ["a.env", "b.env"]
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--user-data-dir=C:/Users/Gustavo/AppData/Local/Google/Chrome/User Data")
     chrome_options.add_argument("--profile-directory=Default")
+
+    if env_file:
+        env_files = [env_file]
 
     for env_file in env_files:
         env = load_environment_variables(env_file)
@@ -150,6 +154,10 @@ def main():
         driver.quit()
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        env_file = sys.argv[1]
+        main(env_file)
+    else:
+        main()
 
 

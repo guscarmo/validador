@@ -34,6 +34,7 @@ def get_dataframe_from_clipboard():
     df = pd.read_clipboard()
     return df
 
+
 def format_dataframe(df, metric_columns):
     df.columns = ['DATE'] + metric_columns
     df['DATE'] = pd.to_datetime(df['DATE'], format='%Y-%m-%d %H:%M:%S').dt.strftime('%Y-%m-%d')
@@ -42,19 +43,20 @@ def format_dataframe(df, metric_columns):
         df[column] = df[column].astype(float)
     return df
 
+
 def merge_dataframes(df_sheet, df_bq, metric_columns):
     df_merge = pd.merge(df_sheet, df_bq, on='DATE', suffixes=('_sheet', '_bq'))
     return df_merge
 
 
-def calculate_differences(row, metric_columns):
+def calculate_differences(row, metric_columns, percentagediff):
     diffs = []
     for column in metric_columns:
         col1 = f'{column}_sheet'
         col2 = f'{column}_bq'
         try:
             diff_pct = ((row[col2] - row[col1]) / row[col1]) * 100
-            if abs(diff_pct) > 5:
+            if abs(diff_pct) > percentagediff:
                 diffs.append({
                     'DATE': row['DATE'],
                     'Dimensão': column,
@@ -111,6 +113,7 @@ def main():
         lastRowCell = env.get('LASTROWCELL')
         rowDays = int(env.get('ROWDAYS'))
         metric_columns = [env.get('METRIC1'), env.get('METRIC2'), env.get('METRIC3')]
+        percentagediff = int(env.get('PERCENTAGEDIFF'))
 
 
         driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
@@ -135,7 +138,7 @@ def main():
         df_merge = merge_dataframes(df_sheet, df_bq, metric_columns)
         print(df_merge)
 
-        resulted = df_merge.apply(calculate_differences, axis=1, args=(metric_columns,))
+        resulted = df_merge.apply(calculate_differences, axis=1, args=(metric_columns, percentagediff,))
         df_resulted = pd.DataFrame([item for sublist in resulted for item in sublist])
 
 

@@ -101,7 +101,6 @@ def main(env_file=None):
     if env_file:
         env_files = [os.path.join(main_dir, env_file)]
 
-
     for env_file in env_files:
         try:
             env = load_environment_variables(env_file)
@@ -115,7 +114,6 @@ def main(env_file=None):
             rowDays = int(env.get('ROWDAYS'))
             metric_columns = [env.get('METRIC1'), env.get('METRIC2'), env.get('METRIC3')]
             percentagediff = int(env.get('PERCENTAGEDIFF'))
-
 
             driver = webdriver.Chrome('C:/Users/Gustavo/Desktop/automate/chromedriver.exe', options=chrome_options)
 
@@ -135,23 +133,22 @@ def main(env_file=None):
             df_bq = pd.read_excel(bq, sheet_name='Planilha1', header=1, engine='openpyxl')
             df_bq = format_dataframe(df_bq, metric_columns)
 
-
             df_merge = merge_dataframes(df_sheet, df_bq, metric_columns)
             print(df_merge)
 
             resulted = df_merge.apply(calculate_differences, axis=1, args=(metric_columns, percentagediff,))
             df_resulted = pd.DataFrame([item for sublist in resulted for item in sublist])
 
-
             output_data = generate_output_data(df_resulted, publisher)
             save_output_data(output_data, 'resultados.json')
 
-            botDiscord = os.path.join(main_dir, "discord/sendJsonDiscord.py")
-            subprocess.run(['python', botDiscord])
+            botdiscord = os.path.join(main_dir, "discord/sendJsonDiscord.py")
+            subprocess.run(['python', botdiscord])
 
             driver.quit()
         except Exception as e:
             print(f"Erro ao processar o arquivo {env_file}: {e}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

@@ -4,16 +4,20 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
-load_dotenv('config.env', override=True)
+main_dir = os.path.dirname(os.path.abspath(__file__))  # Diretório do script main.py
+resulted_json = os.path.join(main_dir, "../resultados.json")
+config_env = os.path.join(main_dir, "config.env")
+
+load_dotenv(config_env, override=True)
 id_bot = os.getenv('ID_BOT')
-id_canal = os.getenv('ID_CHANNEL')
+id_canal = int(os.getenv('ID_CHANNEL'))
 
 intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 
 # Ler os dados do arquivo JSON
-with open('../resultados.json', 'r') as json_file:
+with open(resulted_json, 'r') as json_file:
     data = json.load(json_file)
 
 # Extrair os dados do JSON

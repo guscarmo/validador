@@ -146,7 +146,7 @@ def main(env_file=None):
             output_data = generate_output_data(df_resulted, publisher)
             save_output_data(output_data, 'resultados.json')
 
-            botDiscord = os.path.join(main_dir, "botDiscord.py")
+            botDiscord = os.path.join(main_dir, "discord/sendJsonDiscord.py")
             subprocess.run(['python', botDiscord])
 
             driver.quit()

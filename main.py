@@ -156,5 +156,3 @@ if __name__ == "__main__":
         main(env_file)
     else:
         main()
-
-

@@ -92,7 +92,8 @@ def save_output_data(output_data, output_file):
 
 def main(env_file=None):
     main_dir = os.path.dirname(os.path.abspath(__file__))  # Diretório do script main.py
-    env_files = [os.path.join(main_dir, "a.env"), os.path.join(main_dir, "b.env")]
+    env_files = [os.path.join(main_dir, "a.env"), os.path.join(main_dir, "b.env"), os.path.join(main_dir, "c.env"),
+                 os.path.join(main_dir, "d.env"), os.path.join(main_dir, "e.env"), os.path.join(main_dir, "f.env")]
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--user-data-dir=C:/Users/Gustavo/AppData/Local/Google/Chrome/User Data")
@@ -102,9 +103,10 @@ def main(env_file=None):
         env_files = [os.path.join(main_dir, env_file)]
 
     for env_file in env_files:
-        try:
-            env = load_environment_variables(env_file)
+        env = load_environment_variables(env_file)
+        driver = None
 
+        try:
             pd.set_option('display.max_columns', None)  # Exibir todas as colunas
             pd.set_option('display.expand_frame_repr', False)  # Não
 
@@ -145,10 +147,12 @@ def main(env_file=None):
             botdiscord = os.path.join(main_dir, "discord/sendJsonDiscord.py")
             subprocess.run(['python', botdiscord])
 
-            driver.quit()
         except Exception as e:
             print(f"Erro ao processar o arquivo {env_file}: {e}")
 
+        finally:
+            if driver is not None:
+                driver.quit()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
